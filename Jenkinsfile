@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/alelimc/Comp367Lab2WebApp.git'
+                git 'https://github.com/alelimc/Comp367Lab2Jenkins.git'
             }
         }
         stage('Build') { 

@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Lab2 WebApp</title>
+    <title>DevOps Lab2 WebApp</title>
 </head>
 <body>
     <h1>

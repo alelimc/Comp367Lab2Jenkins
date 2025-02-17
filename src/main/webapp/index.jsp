@@ -3,11 +3,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DevOps Lab2 WebApp</title>
+    <title>Lab2 WebApp</title>
 </head>
 <body>
     <h1>
-        Welcome to COMP367
-    </h1>   
+        <% 
+            LocalTime currentTime = LocalTime.now();
+            if (currentTime.isBefore(LocalTime.NOON)) {
+        %>
+            Good morning, Aleli, Welcome to COMP367
+        <% 
+            } else {
+        %>
+            Good afternoon, Aleli, Welcome to COMP367
+        <% 
+            }
+        %>
+    </h1>
 </body>
 </html>

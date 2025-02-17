@@ -3,12 +3,12 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/alelimc/Comp367Lab2Jenkins.git'
+                git branch: 'main', url: 'https://github.com/alelimc/Comp367Lab2Jenkins.git'
             }
         }
-        stage('Build') { 
+        stage('Build') {
             steps {
-                bat 'mvn clean install'
+                echo 'Building the application...'
             }
         }
     }

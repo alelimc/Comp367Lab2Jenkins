@@ -15,7 +15,7 @@ pipeline {
 
         stage('Build Maven Project') {
             steps {
-                sh 'mvn clean package'
+                bat 'mvn clean package'
             }
         }
 
@@ -23,8 +23,8 @@ pipeline {
             steps {
                 script {
                     echo "Checking Docker credentials..."
-                    sh 'echo "DOCKER_USER: $DOCKER_USER"'
-                    sh 'if [ -z "$DOCKER_PASS" ]; then echo "DOCKER_PASS is empty!"; exit 1; fi'
+                    bat 'echo "DOCKER_USER: $DOCKER_USER"'
+                    bat 'if [ -z "$DOCKER_PASS" ]; then echo "DOCKER_PASS is empty!"; exit 1; fi'
                 }
             }
         }
@@ -39,13 +39,13 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh "docker build -t $DOCKER_IMAGE ."
+                bat "docker build -t $DOCKER_IMAGE ."
             }
         }
 
         stage('Docker Push') {
             steps {
-                sh "docker push $DOCKER_IMAGE"
+                bat "docker push $DOCKER_IMAGE"
             }
         }
     }

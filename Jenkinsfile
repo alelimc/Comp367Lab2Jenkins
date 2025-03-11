@@ -2,73 +2,50 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'alelimacapagal/maven-webapp'
-        DOCKER_CREDENTIALS = 'docker-hub-credentials'
+        DOCKER_IMAGE = 'alelimc/maven-webapp'
+        DOCKER_CREDENTIALS = 'docker-hub-credentials'  // Make sure this ID matches Jenkins credentials
     }
 
     stages {
         stage('Checkout') {
             steps {
-                script {
-                    try {
-                        git branch: 'main', 
-                            credentialsId: 'github-credentials', 
-                            url: 'https://github.com/alelimc/Comp367Lab2Jenkins.git'
-                    } catch (Exception e) {
-                        echo 'Git checkout failed, trying an alternative method...'
-                        checkout scm
-                    }
-                }
+                git branch: 'main', url: 'https://github.com/alelimc/Comp367Lab2Jenkins.git'
             }
         }
 
         stage('Build Maven Project') {
             steps {
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Verify Credentials') {
+            steps {
                 script {
-                    if (isUnix()) {
-                        sh 'mvn clean package'
-                    } else {
-                        bat 'mvn clean package'
-                    }
+                    echo "Checking Docker credentials..."
+                    sh 'echo "DOCKER_USER: $DOCKER_USER"'
+                    sh 'if [ -z "$DOCKER_PASS" ]; then echo "DOCKER_PASS is empty!"; exit 1; fi'
                 }
             }
         }
 
         stage('Docker Login') {
             steps {
-                withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    script {
-                        if (isUnix()) {
-                            sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                        } else {
-                            bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin"
-                        }
-                    }
+                withDockerRegistry([credentialsId: DOCKER_CREDENTIALS, url: 'https://index.docker.io/v1/']) {
+                    echo 'Docker login successful!'
                 }
             }
         }
 
         stage('Docker Build') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh "docker build -t $DOCKER_IMAGE ."
-                    } else {
-                        bat "docker build -t %DOCKER_IMAGE% ."
-                    }
-                }
+                sh "docker build -t $DOCKER_IMAGE ."
             }
         }
 
         stage('Docker Push') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh "docker push $DOCKER_IMAGE"
-                    } else {
-                        bat "docker push %DOCKER_IMAGE%"
-                    }
-                }
+                sh "docker push $DOCKER_IMAGE"
             }
         }
     }

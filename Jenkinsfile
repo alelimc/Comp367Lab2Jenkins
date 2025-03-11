@@ -3,50 +3,39 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'alelimacapagal/maven-webapp'
-        DOCKER_CREDENTIALS = 'docker-hub-credentials' // Jenkins credential ID
+        DOCKER_CREDENTIALS = 'docker-hub-credentials'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                git 'https://github.com/alelimc/Comp367Lab2Jenkins.git'
             }
         }
-        
+
         stage('Build Maven Project') {
             steps {
-                script {
-                    // Run Maven build
-                    sh 'mvn clean install'
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                 }
             }
         }
 
-        stage('Login to Docker Hub') {
+        stage('Docker Build') {
             steps {
-                script {
-                    docker.withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh "echo $DOCKER_PASSWORD | docker login --username $DOCKER_USER --password-stdin"
-                    }
-                }
+                sh "docker build -t $DOCKER_IMAGE ."
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Docker Push') {
             steps {
-                script {
-                    // Docker build command
-                    sh 'docker build -t ${DOCKER_IMAGE} .'
-                }
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    // Docker push command
-                    sh 'docker push ${DOCKER_IMAGE}'
-                }
+                sh "docker push $DOCKER_IMAGE"
             }
         }
     }

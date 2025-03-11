@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'alelimc/maven-webapp'
-        DOCKER_CREDENTIALS = 'docker-hub-credentials'  // Make sure this ID matches Jenkins credentials
+        DOCKER_CREDENTIALS = 'docker-hub-credentials'  // Ensure this ID matches Jenkins credentials
     }
 
     stages {
@@ -23,16 +23,17 @@ pipeline {
             steps {
                 script {
                     echo "Checking Docker credentials..."
-                    bat 'echo DOCKER_USER: %DOCKER_USER%'
-                    bat 'if "%DOCKER_PASS%"=="" (echo DOCKER_PASS is empty! && exit /b 1)'
                 }
             }
         }
 
         stage('Docker Login') {
             steps {
-                withDockerRegistry([credentialsId: DOCKER_CREDENTIALS, url: 'https://index.docker.io/v1/']) {
-                    echo 'Docker login successful!'
+                withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    echo "Docker login using credentials..."
+                    bat "echo DOCKER_USER: %DOCKER_USER%"
+                    bat 'if "%DOCKER_PASS%"=="" (echo DOCKER_PASS is empty! && exit /b 1)'
+                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS% https://index.docker.io/v1/'
                 }
             }
         }

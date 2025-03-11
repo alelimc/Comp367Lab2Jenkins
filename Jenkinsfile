@@ -23,8 +23,8 @@ pipeline {
             steps {
                 script {
                     echo "Checking Docker credentials..."
-                    bat 'echo "DOCKER_USER: $DOCKER_USER"'
-                    bat 'if [ -z "$DOCKER_PASS" ]; then echo "DOCKER_PASS is empty!"; exit 1; fi'
+                    bat 'echo DOCKER_USER: %DOCKER_USER%'
+                    bat 'if "%DOCKER_PASS%"=="" (echo DOCKER_PASS is empty! && exit /b 1)'
                 }
             }
         }

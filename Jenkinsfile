@@ -9,33 +9,66 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/alelimc/Comp367Lab2Jenkins.git'
+                script {
+                    try {
+                        git branch: 'main', 
+                            credentialsId: 'github-credentials', 
+                            url: 'https://github.com/alelimc/Comp367Lab2Jenkins.git'
+                    } catch (Exception e) {
+                        echo 'Git checkout failed, trying an alternative method...'
+                        checkout scm
+                    }
+                }
             }
         }
 
         stage('Build Maven Project') {
             steps {
-                sh 'mvn clean package'
+                script {
+                    if (isUnix()) {
+                        sh 'mvn clean package'
+                    } else {
+                        bat 'mvn clean package'
+                    }
+                }
             }
         }
 
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    script {
+                        if (isUnix()) {
+                            sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                        } else {
+                            bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin"
+                        }
+                    }
                 }
             }
         }
 
         stage('Docker Build') {
             steps {
-                sh "docker build -t $DOCKER_IMAGE ."
+                script {
+                    if (isUnix()) {
+                        sh "docker build -t $DOCKER_IMAGE ."
+                    } else {
+                        bat "docker build -t %DOCKER_IMAGE% ."
+                    }
+                }
             }
         }
 
         stage('Docker Push') {
             steps {
-                sh "docker push $DOCKER_IMAGE"
+                script {
+                    if (isUnix()) {
+                        sh "docker push $DOCKER_IMAGE"
+                    } else {
+                        bat "docker push %DOCKER_IMAGE%"
+                    }
+                }
             }
         }
     }
